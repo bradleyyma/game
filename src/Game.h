@@ -3,6 +3,9 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include "Player.h"
+#include "Monster.h"
+#include <vector>
+#include <memory>
 
 class Game {
 public:
@@ -18,10 +21,17 @@ private:
     void handleEvents();
     void update(float deltaTime);
     void render();
+    void spawnMonster();  // Spawn a new monster
+    void checkCollisions(); // Check for collisions between player and monsters
     
     SDL_Window* window;
     SDL_Renderer* renderer;
     Player player;
+    std::vector< std::unique_ptr<Monster> > monsters;
+    
+    float monsterSpawnTimer;
+    const float MONSTER_SPAWN_INTERVAL = 5.0f; // Spawn a monster every 5 seconds
+    const int MAX_MONSTERS = 10; // Maximum number of monsters allowed
     
     bool isRunning;
     Uint32 frameStart;

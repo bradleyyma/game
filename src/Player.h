@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <string>
+#include "Monster.h"
 
 class Player {
 public:
@@ -14,6 +15,8 @@ public:
     void handleEvent(SDL_Event& event);
     void update(float deltaTime);
     void render(SDL_Renderer* renderer);
+    void takeDamage(int amount);
+    bool checkCollision(const Monster& monster) const;
     
 private:
     float x, y;            // Position

@@ -1,8 +1,12 @@
 #include "Game.h"
+#include "Slime.h"
+#include "MonsterFactory.h"
 #include <iostream>
+#include <random>
 
 Game::Game()
-    : window(nullptr), renderer(nullptr), isRunning(false), frameStart(0), frameTime(0) {
+    : window(nullptr), renderer(nullptr), isRunning(false), frameStart(0), frameTime(0),
+      monsterSpawnTimer(0.0f) {
 }
 
 Game::~Game() {
@@ -67,6 +71,34 @@ bool Game::loadMedia() {
     return true;
 }
 
+void Game::spawnMonster() {
+    if (monsters.size() >= MAX_MONSTERS) return;
+    
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    
+    // Create new slime using MonsterFactory
+    auto slime = MonsterFactory::createMonster(MonsterFactory::MonsterType::SLIME, renderer, w, h);
+    if (slime) {
+        monsters.push_back(std::move(slime));
+    }
+}
+
+void Game::checkCollisions() {
+    // Check for collisions between player and monsters
+    for (auto it = monsters.begin(); it != monsters.end();) {
+        if (player.checkCollision(**it)) {
+            // Player takes damage
+            player.takeDamage(10);
+            
+            // Remove the monster
+            it = monsters.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 void Game::run() {
     Uint32 lastTime = SDL_GetTicks();
     frameStart = SDL_GetTicks();
@@ -107,7 +139,23 @@ void Game::handleEvents() {
 }
 
 void Game::update(float deltaTime) {
+    // Update player
     player.update(deltaTime);
+    
+    // Update monster spawn timer
+    monsterSpawnTimer += deltaTime;
+    if (monsterSpawnTimer >= MONSTER_SPAWN_INTERVAL) {
+        spawnMonster();
+        monsterSpawnTimer = 0.0f;
+    }
+    
+    // Update monsters
+    for (auto& monster : monsters) {
+        monster->update(deltaTime);
+    }
+    
+    // Check for collisions
+    checkCollisions();
 }
 
 void Game::render() {
@@ -117,6 +165,11 @@ void Game::render() {
     
     // Render player
     player.render(renderer);
+    
+    // Render monsters
+    for (auto& monster : monsters) {
+        monster->render(renderer);
+    }
     
     // Update screen
     SDL_RenderPresent(renderer);

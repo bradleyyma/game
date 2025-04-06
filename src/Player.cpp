@@ -3,7 +3,7 @@
 
 // Initialize static members
 const float Player::SPEED = 300.0f;        // pixels per second
-const float Player::JUMP_VELOCITY = -400.0f; // pixels per second
+const float Player::JUMP_VELOCITY = -500.0f; // pixels per second
 const float Player::GRAVITY = 800.0f;      // pixels per second squared
 
 Player::Player()
@@ -21,7 +21,21 @@ Player::~Player() {
 void Player::init(int startX, int startY) {
     x = startX;
     y = startY;
+    isJumping = true;
     health = 100;
+}
+
+void Player::takeDamage(int amount) {
+    health -= amount;
+    if (health < 0) health = 0;
+}
+
+bool Player::checkCollision(const Monster& monster) const {
+    // Simple AABB collision detection
+    return (x < monster.getX() + Monster::WIDTH &&
+            x + WIDTH > monster.getX() &&
+            y < monster.getY() + Monster::HEIGHT &&
+            y + HEIGHT > monster.getY());
 }
 
 bool Player::loadTexture(SDL_Renderer* renderer, const std::string& path) {
@@ -58,15 +72,15 @@ void Player::handleEvent(SDL_Event& event) {
     // Key press
     if (event.type == SDL_KEYDOWN && event.key.repeat == 0) {
         switch (event.key.keysym.sym) {
-            case SDLK_w:
-                keyStates[0] = true;
-                break;
+            // case SDLK_w:
+            //     keyStates[0] = true;
+            //     break;
             case SDLK_a:
                 keyStates[1] = true;
                 break;
-            case SDLK_s:
-                keyStates[2] = true;
-                break;
+            // case SDLK_s:
+            //     keyStates[2] = true;
+            //     break;
             case SDLK_d:
                 keyStates[3] = true;
                 break;
