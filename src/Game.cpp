@@ -89,7 +89,7 @@ void Game::checkCollisions() {
     for (auto it = monsters.begin(); it != monsters.end();) {
         if (player.checkCollision(**it)) {
             // Player takes damage
-            player.takeDamage(10);
+            player.takeDamage((*it)->getDamage());
             
             // Remove the monster
             it = monsters.erase(it);
@@ -112,6 +112,7 @@ void Game::run() {
         
         handleEvents();
         update(deltaTime);
+        checkCollisions();
         render();
         
         // Cap the frame rate
@@ -154,8 +155,6 @@ void Game::update(float deltaTime) {
         monster->update(deltaTime);
     }
     
-    // Check for collisions
-    checkCollisions();
 }
 
 void Game::render() {

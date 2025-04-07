@@ -4,10 +4,14 @@
 
 class Slime : public Monster {
 public:
-    Slime();
+    // Speed constants
+    static const float SLIME_SPEED_MIN;
+    static const float SLIME_SPEED_MAX;
+    static const float SLIME_SPEED_DEFAULT;
+    Slime(int x, int y, int maxX, int maxY, bool moveRight, float speed);
     void update(float deltaTime) override;
     
 private:
     bool movingRight;  // Direction of movement
-    static const float SLIME_SPEED;
+    float speed;
 }; 
