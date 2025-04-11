@@ -30,7 +30,7 @@ bool Game::init() {
     
     // Create window
     window = SDL_CreateWindow("Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                             SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+                             0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
     if (!window) {
         std::cerr << "Window could not be created! SDL Error: " << SDL_GetError() << std::endl;
         return false;
@@ -43,14 +43,15 @@ bool Game::init() {
         return false;
     }
     
-    // Initialize random number generator
-    GameUtils::initRandom();
-    
-    // Initialize player
-    if (!player.init(renderer)) {
-        std::cerr << "Failed to initialize player!" << std::endl;
-        return false;
-    }
+    // Set renderer color to white
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    // Get window size for player positioning
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+
+    // Initialize player in the center of the screen
+
+    player.init(w / 2, h / 2);
     
     isRunning = true;
     return true;

@@ -3,7 +3,7 @@
 #include <iostream>
 
 // Define static constants
-const float Slime::SLIME_SPEED_MIN = 50.0f;
+const float Slime::SLIME_SPEED_MIN = 150.0f;
 const float Slime::SLIME_SPEED_MAX = 150.0f;
 const float Slime::SLIME_SPEED_DEFAULT = 100.0f;
 const int Slime::SLIME_HEALTH = 100;
