@@ -16,8 +16,18 @@ std::unique_ptr<Monster> MonsterFactory::createMonster(MonsterType type, SDL_Ren
             slime->loadTexture(renderer, "../assets/images/slime.png");
             return slime;
         }
+        case MonsterType::HOPPER: {
+            auto hopper = std::make_unique<Hopper>(
+                GameUtils::getRandomX(windowWidth, Monster::WIDTH),
+                GameUtils::getGroundY(windowHeight, Monster::HEIGHT),
+                windowWidth,
+                windowHeight
+            );
+            hopper->loadTexture(renderer, "../assets/images/slime.png"); // Using slime texture for now
+            return hopper;
+        }
         default:
             std::cerr << "Unknown monster type!" << std::endl;
             return nullptr;
     }
-} 
+}

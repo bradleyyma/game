@@ -29,7 +29,7 @@ protected:
     float maxX, maxY;
     int health;            // Health points
     bool isJumping;        // Jump state
-    int damage;
+    int damage;         // Damage dealt by the monster
     
     // Texture for the Monster sprite
     SDL_Texture* texture;

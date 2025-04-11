@@ -22,5 +22,6 @@ add_executable(my_game
     src/Slime.cpp
     src/MonsterFactory.cpp
     src/GameUtils.cpp
+    src/entities/Hopper.cpp
 )
 target_link_libraries(my_game PRIVATE SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer SDL2::SDL2 SDL2_ttf::SDL2_ttf)

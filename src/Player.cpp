@@ -95,15 +95,15 @@ void Player::handleEvent(SDL_Event& event) {
     // Key release
     else if (event.type == SDL_KEYUP && event.key.repeat == 0) {
         switch (event.key.keysym.sym) {
-            case SDLK_w:
-                keyStates[0] = false;
-                break;
+            // case SDLK_w:
+            //     keyStates[0] = false;
+            //     break;
             case SDLK_a:
                 keyStates[1] = false;
                 break;
-            case SDLK_s:
-                keyStates[2] = false;
-                break;
+            // case SDLK_s:
+            //     keyStates[2] = false;
+            //     break;
             case SDLK_d:
                 keyStates[3] = false;
                 break;

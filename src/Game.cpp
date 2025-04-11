@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Slime.h"
 #include "MonsterFactory.h"
+#include "GameUtils.h"
 #include <iostream>
 #include <random>
 
@@ -27,35 +28,29 @@ bool Game::init() {
         return false;
     }
     
-    // Create window (fullscreen)
-    window = SDL_CreateWindow(
-        "SDL2 Game",
-        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        0, 0,  // Width and height will be set by fullscreen
-        SDL_WINDOW_FULLSCREEN_DESKTOP
-    );
-    
+    // Create window
+    window = SDL_CreateWindow("Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                             SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (!window) {
         std::cerr << "Window could not be created! SDL Error: " << SDL_GetError() << std::endl;
         return false;
     }
     
     // Create renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         std::cerr << "Renderer could not be created! SDL Error: " << SDL_GetError() << std::endl;
         return false;
     }
     
-    // Set renderer color to white
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    // Initialize random number generator
+    GameUtils::initRandom();
     
-    // Get window size for player positioning
-    int w, h;
-    SDL_GetWindowSize(window, &w, &h);
-    
-    // Initialize player in the center of the screen
-    player.init(w / 2, h / 2);
+    // Initialize player
+    if (!player.init(renderer)) {
+        std::cerr << "Failed to initialize player!" << std::endl;
+        return false;
+    }
     
     isRunning = true;
     return true;
@@ -78,9 +73,9 @@ void Game::spawnMonster() {
     SDL_GetWindowSize(window, &w, &h);
     
     // Create new slime using MonsterFactory
-    auto slime = MonsterFactory::createMonster(MonsterFactory::MonsterType::SLIME, renderer, w, h);
-    if (slime) {
-        monsters.push_back(std::move(slime));
+    auto monster = MonsterFactory::createMonster(MonsterFactory::MonsterType::SLIME, renderer, w, h);
+    if (monster) {
+        monsters.push_back(std::move(monster));
     }
 }
 
