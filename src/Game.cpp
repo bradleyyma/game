@@ -49,47 +49,45 @@ bool Game::init() {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
 
-
-    
     // Initialize player in the center of the screen
 
     player.init(w / 2, h / 2);
 
-    // Platform 1
-    Platform p1 = Platform();
-    p1.init(100, h / 1.1, 200, 50);
-    p1.loadTexture(renderer, "../assets/images/slime.png");
-    p1.setVelocity(100.0f, 0);
 
-    std::cout << "[Game] Total platforms: " << platforms.size() << std::endl;
+    std::unique_ptr<Platform> p1 = std::make_unique<Platform>();
+    p1->init(100, h / 1.1, 200, 50);
+    
+    p1->setVelocity(100.0f, 0);
+    
+    if (!player.loadTexture(renderer, "../assets/images/dot.bmp")) {
+        std::cerr << "Failed to load player texture!" << std::endl;
+    }
 
-
-    // Platform 2
-    // Platform p2;
-    // p2.init(200, h / 3, 200, 50);
-    // p2.loadTexture(renderer, "../assets/images/platform_debug_red.png");
-    // p2.setVelocity(60.0f, 0);
-
-    // if (!p1.loadTexture(renderer, "/Users/bjkim/Desktop/game/assets/images/platform_debug_green.png")) {
-    //     std::cerr << "[Platform 1] Failed to load texture!\n";
-    // }
-    // if (!p2.loadTexture(renderer, "/Users/bjkim/Desktop/game/assets/images/platform_debug_red.png")) {
-    //     std::cerr << "[Platform 2] Failed to load texture!\n";
-    // }
+    if (!p1->loadTexture(renderer, "../assets/images/platform.png")) {
+        std::cerr << "[Game] Failed to load platform texture!" << std::endl;
+    }
 
     platforms.emplace_back(std::move(p1));
-    // platforms.emplace_back(std::move(p2));
-    
+
     isRunning = true;
     return true;
 }
 
 bool Game::loadMedia() {
+    std::cout << "not called" << std::endl;
     // Load player texture
-    if (!player.loadTexture(renderer, "../assets/images/dot.bmp")) {
-        std::cerr << "Failed to load player texture!" << std::endl;
-        return false;
-    }
+    // if (!player.loadTexture(renderer, "../assets/images/dot2.bmp")) {
+    //     std::cerr << "Failed to load player texture!" << std::endl;
+    //     return false;
+    // }
+
+    // for (auto& platform : platforms) {
+    //     if (!platform.loadTexture(renderer, "../assets/images/platform.png")) {
+    //         std::cerr << "Failed to load platform texture!" << std::endl;
+    //         return false;
+    //     }
+    // }
+    
     
     return true;
 }
@@ -164,16 +162,16 @@ void Game::handleEvents() {
 
 void Game::update(float deltaTime) {
     // Update platforms
-    for (Platform& platform : platforms) {
-        platform.update(deltaTime);
+    for (auto & platform : platforms) {
+        platform->update(deltaTime);
 
         // Bounce
         int screenW, screenH;
         SDL_GetWindowSize(window, &screenW, &screenH);
 
-        SDL_Rect rect = platform.getCollider();
+        SDL_Rect rect = platform->getCollider();
         if (rect.x <= 0 || rect.x + rect.w >= screenW) {
-            platform.reverseX();
+            platform->reverseX();
         }
     }
     
@@ -201,8 +199,8 @@ void Game::render() {
     SDL_RenderClear(renderer);
     
     // Render platform
-    for (const Platform& platform : platforms) {
-        platform.render(renderer);
+    for (auto & platform : platforms) {
+        platform->render(renderer);
     }
 
     // Render player

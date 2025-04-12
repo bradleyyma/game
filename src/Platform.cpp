@@ -55,37 +55,14 @@ void Platform::update(float deltaTime) {
 }
 
 void Platform::render(SDL_Renderer* renderer) const {
-    SDL_RenderCopy(renderer, texture, NULL, &collider);
+    if (texture) {
+        SDL_RenderCopy(renderer, texture, NULL, &collider);
+    } else {
+        // Fallback: Render a colored rectangle if texture is missing
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);  // Green fallback color
+        SDL_RenderFillRect(renderer, &collider);
+    }
 }
-
-// void Platform::render(SDL_Renderer* renderer) const {
-//     std::cout << "[Platform] Rendering at (" << collider.x << "," << collider.y 
-//     << ") using texture ptr: " << texture << std::endl;
-
-//     std::cout << "[Platform] Render call for collider at (" 
-//               << collider.x << ", " << collider.y << ", " 
-//               << collider.w << ", " << collider.h << ")\n";
-
-//     if (!texture) {
-//         std::cerr << "[Platform] WARNING: texture is NULL\n";
-//         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-//         SDL_RenderFillRect(renderer, &collider);
-//         return;
-//     }
-
-//     SDL_RenderCopy(renderer, texture, NULL, &collider);
-// }
-
-// void Platform::render(SDL_Renderer* renderer) const {
-//     if (collider.y < 400)
-//         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);  // red
-//     else
-//         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);  // green
-
-//     SDL_RenderFillRect(renderer, &collider);
-// }
-
-
 
 void Platform::setVelocity(float vx, float vy) {
     velX = vx;

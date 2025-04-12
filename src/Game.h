@@ -29,7 +29,7 @@ private:
     SDL_Renderer* renderer;
     Player player;
     std::vector< std::unique_ptr<Monster> > monsters;
-    std::vector<Platform> platforms;
+    std::vector< std::unique_ptr<Platform> > platforms;
     
     float monsterSpawnTimer;
     const float MONSTER_SPAWN_INTERVAL = 5.0f; // Spawn a monster every 5 seconds
