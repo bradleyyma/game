@@ -18,10 +18,12 @@ add_executable(my_game
     src/main.cpp
     src/Game.cpp
     src/Player.cpp
-    src/Monster.cpp
-    src/Slime.cpp
-    src/MonsterFactory.cpp
     src/GameUtils.cpp
-    src/entities/Hopper.cpp
+    src/entities/monsters/Monster.cpp
+    src/entities/monsters/Slime.cpp
+    src/entities/monsters/MonsterFactory.cpp
+    src/entities/monsters/Hopper.cpp
+    src/entities/weapons/Gun.cpp
+    src/entities/weapons/Bullet.cpp
 )
 target_link_libraries(my_game PRIVATE SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer SDL2::SDL2 SDL2_ttf::SDL2_ttf)

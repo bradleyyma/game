@@ -1,5 +1,5 @@
 #include "Slime.h"
-#include "GameUtils.h"
+#include "../../GameUtils.h"
 #include <iostream>
 
 // Define static constants

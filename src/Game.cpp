@@ -1,6 +1,6 @@
 #include "Game.h"
-#include "Slime.h"
-#include "MonsterFactory.h"
+#include "entities/monsters/Slime.h"
+#include "entities/monsters/MonsterFactory.h"
 #include "GameUtils.h"
 #include <iostream>
 #include <random>
@@ -138,6 +138,7 @@ void Game::handleEvents() {
 void Game::update(float deltaTime) {
     // Update player
     player.update(deltaTime);
+    player.getGun()->update(deltaTime);  // Update bullets
     
     // Update monster spawn timer
     monsterSpawnTimer += deltaTime;
@@ -160,6 +161,7 @@ void Game::render() {
     
     // Render player
     player.render(renderer);
+    player.getGun()->render(renderer);  // Render bullets
     
     // Render monsters
     for (auto& monster : monsters) {

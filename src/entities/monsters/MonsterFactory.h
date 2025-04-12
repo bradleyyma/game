@@ -4,7 +4,7 @@
 #include <memory>
 #include "Monster.h"
 #include "Slime.h"
-#include "entities/Hopper.h"
+#include "Hopper.h"
 
 class MonsterFactory {
 public:

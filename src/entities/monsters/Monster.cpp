@@ -3,8 +3,8 @@
 #include <random>
 
 
-Monster::Monster(int x, int y, int maxX, int maxY, int maxHealth, int damage)
-    : x(x), y(y)
+Monster::Monster(float x, float y, float maxX, float maxY, int maxHealth, int damage)
+    : x{x}, y{y}
     , maxX(maxX), maxY(maxY)
     , health(maxHealth)
     , damage(damage)
@@ -30,14 +30,14 @@ bool Monster::loadTexture(SDL_Renderer* renderer, const std::string& path) {
 
     // Create texture from surface pixels
     texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    SDL_FreeSurface(loadedSurface);
     if (texture == nullptr) {
         std::cerr << "Unable to create texture from " << path << "! SDL Error: " << SDL_GetError() << std::endl;
-        SDL_FreeSurface(loadedSurface);
         return false;
     }
 
     // Get rid of old loaded surface
-    SDL_FreeSurface(loadedSurface);
+    
 
     return true;
 }

@@ -1,5 +1,5 @@
 #include "MonsterFactory.h"
-#include "GameUtils.h"
+#include "../../GameUtils.h"
 #include <iostream>
 
 std::unique_ptr<Monster> MonsterFactory::createMonster(MonsterType type, SDL_Renderer* renderer, int windowWidth, int windowHeight) {

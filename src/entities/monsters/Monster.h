@@ -22,7 +22,7 @@ public:
     int getDamage() const { return damage; }
     
 protected:
-    Monster(int x, int y, int maxX, int maxY, int maxHealth, int damage);  // Protected constructor
+    Monster(float x, float y, float maxX, float maxY, int maxHealth, int damage);  // Protected constructor
     
     float x, y;            // Position
     float velX, velY;      // Velocity
