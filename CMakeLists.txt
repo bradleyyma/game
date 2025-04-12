@@ -25,5 +25,6 @@ add_executable(my_game
     src/entities/monsters/Hopper.cpp
     src/entities/weapons/Gun.cpp
     src/entities/weapons/Bullet.cpp
+    src/Platform.cpp
 )
 target_link_libraries(my_game PRIVATE SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer SDL2::SDL2 SDL2_ttf::SDL2_ttf)
