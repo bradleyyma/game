@@ -12,30 +12,26 @@ public:
     static const int HEIGHT = 50;
     
     virtual ~Monster();
-    
-    void init(int x, int y);
-    bool loadTexture(SDL_Renderer* renderer, const std::string& path);
+
     virtual void update(float deltaTime) = 0;  // Pure virtual function
+
+    bool loadTexture(SDL_Renderer* renderer, const std::string& path);
     void render(SDL_Renderer* renderer);
     float getX() const { return x; }
     float getY() const { return y; }
+    int getDamage() const { return damage; }
     
 protected:
-    Monster();  // Protected constructor
+    Monster(float x, float y, float maxX, float maxY, int maxHealth, int damage);  // Protected constructor
     
     float x, y;            // Position
     float velX, velY;      // Velocity
+    float maxX, maxY;
     int health;            // Health points
     bool isJumping;        // Jump state
+    int damage;         // Damage dealt by the monster
     
     // Texture for the Monster sprite
     SDL_Texture* texture;
     
-    // Movement constants
-    static const float SPEED;
-    static const float JUMP_VELOCITY;
-    static const float GRAVITY;
-    
-    // Key states
-    bool keyStates[4] = {false}; // W, A, S, D
 };

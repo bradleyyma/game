@@ -3,7 +3,8 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <string>
-#include "Monster.h"
+#include "entities/monsters/Monster.h"
+#include "entities/weapons/Gun.h"
 
 class Player {
 public:
@@ -17,15 +18,16 @@ public:
     void render(SDL_Renderer* renderer);
     void takeDamage(int amount);
     bool checkCollision(const Monster& monster) const;
+    Gun* getGun() { return gun.get(); } // Accessor for gun
     
 private:
     float x, y;            // Position
     float velX, velY;      // Velocity
     int health;            // Health points
     bool isJumping;        // Jump state
+    std::unique_ptr<Gun> gun;          // Gun as unique pointer
     
-    // Texture for the player sprite
-    SDL_Texture* texture;
+    SDL_Texture* texture; // Texture for the player sprite
     
     // Player dimensions
     static const int WIDTH = 50;
@@ -38,4 +40,5 @@ private:
     
     // Key states
     bool keyStates[4] = {false}; // W, A, S, D
+    bool isMouseDown; // Mouse state
 };

@@ -1,6 +1,7 @@
 #include "Game.h"
-#include "Slime.h"
-#include "MonsterFactory.h"
+#include "entities/monsters/Slime.h"
+#include "entities/monsters/MonsterFactory.h"
+#include "GameUtils.h"
 #include <iostream>
 #include <random>
 
@@ -27,21 +28,16 @@ bool Game::init() {
         return false;
     }
     
-    // Create window (fullscreen)
-    window = SDL_CreateWindow(
-        "SDL2 Game",
-        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        0, 0,  // Width and height will be set by fullscreen
-        SDL_WINDOW_FULLSCREEN_DESKTOP
-    );
-    
+    // Create window
+    window = SDL_CreateWindow("Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                             0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
     if (!window) {
         std::cerr << "Window could not be created! SDL Error: " << SDL_GetError() << std::endl;
         return false;
     }
     
     // Create renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         std::cerr << "Renderer could not be created! SDL Error: " << SDL_GetError() << std::endl;
         return false;
@@ -49,12 +45,12 @@ bool Game::init() {
     
     // Set renderer color to white
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    
     // Get window size for player positioning
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
-    
+
     // Initialize player in the center of the screen
+
     player.init(w / 2, h / 2);
     
     isRunning = true;
@@ -78,9 +74,9 @@ void Game::spawnMonster() {
     SDL_GetWindowSize(window, &w, &h);
     
     // Create new slime using MonsterFactory
-    auto slime = MonsterFactory::createMonster(MonsterFactory::MonsterType::SLIME, renderer, w, h);
-    if (slime) {
-        monsters.push_back(std::move(slime));
+    auto monster = MonsterFactory::createMonster(MonsterFactory::MonsterType::SLIME, renderer, w, h);
+    if (monster) {
+        monsters.push_back(std::move(monster));
     }
 }
 
@@ -89,7 +85,7 @@ void Game::checkCollisions() {
     for (auto it = monsters.begin(); it != monsters.end();) {
         if (player.checkCollision(**it)) {
             // Player takes damage
-            player.takeDamage(10);
+            player.takeDamage((*it)->getDamage());
             
             // Remove the monster
             it = monsters.erase(it);
@@ -112,6 +108,7 @@ void Game::run() {
         
         handleEvents();
         update(deltaTime);
+        checkCollisions();
         render();
         
         // Cap the frame rate
@@ -141,6 +138,7 @@ void Game::handleEvents() {
 void Game::update(float deltaTime) {
     // Update player
     player.update(deltaTime);
+    player.getGun()->update(deltaTime);  // Update bullets
     
     // Update monster spawn timer
     monsterSpawnTimer += deltaTime;
@@ -154,8 +152,6 @@ void Game::update(float deltaTime) {
         monster->update(deltaTime);
     }
     
-    // Check for collisions
-    checkCollisions();
 }
 
 void Game::render() {
@@ -165,6 +161,7 @@ void Game::render() {
     
     // Render player
     player.render(renderer);
+    player.getGun()->render(renderer);  // Render bullets
     
     // Render monsters
     for (auto& monster : monsters) {

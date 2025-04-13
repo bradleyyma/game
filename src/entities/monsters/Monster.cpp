@@ -2,13 +2,14 @@
 #include <iostream>
 #include <random>
 
-// Initialize static members
-const float Monster::SPEED = 200.0f;        // pixels per second
-const float Monster::JUMP_VELOCITY = -400.0f; // pixels per second
-const float Monster::GRAVITY = 800.0f;      // pixels per second squared
 
-Monster::Monster()
-    : x(0), y(0), velX(0), velY(0), health(100), isJumping(false), texture(nullptr) {
+Monster::Monster(float x, float y, float maxX, float maxY, int maxHealth, int damage)
+    : x{x}, y{y}
+    , maxX(maxX), maxY(maxY)
+    , health(maxHealth)
+    , damage(damage)
+    , isJumping(false)
+    , texture(nullptr) {
 }
 
 Monster::~Monster() {
@@ -17,13 +18,6 @@ Monster::~Monster() {
         SDL_DestroyTexture(texture);
         texture = nullptr;
     }
-}
-
-void Monster::init(int x, int y) {
-    this->x = x;
-    this->y = y;
-    health = 100;
-    isJumping = false;
 }
 
 bool Monster::loadTexture(SDL_Renderer* renderer, const std::string& path) {
@@ -36,14 +30,14 @@ bool Monster::loadTexture(SDL_Renderer* renderer, const std::string& path) {
 
     // Create texture from surface pixels
     texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    SDL_FreeSurface(loadedSurface);
     if (texture == nullptr) {
         std::cerr << "Unable to create texture from " << path << "! SDL Error: " << SDL_GetError() << std::endl;
-        SDL_FreeSurface(loadedSurface);
         return false;
     }
 
     // Get rid of old loaded surface
-    SDL_FreeSurface(loadedSurface);
+    
 
     return true;
 }

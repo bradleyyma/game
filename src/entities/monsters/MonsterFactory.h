@@ -4,13 +4,14 @@
 #include <memory>
 #include "Monster.h"
 #include "Slime.h"
+#include "Hopper.h"
 
 class MonsterFactory {
 public:
     enum class MonsterType {
-        SLIME
-        // Add more monster types here as they are created
+        SLIME,
+        HOPPER
     };
     
     static std::unique_ptr<Monster> createMonster(MonsterType type, SDL_Renderer* renderer, int windowWidth, int windowHeight);
-}; 
+};

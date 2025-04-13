@@ -3,7 +3,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include "Player.h"
-#include "Monster.h"
+#include "entities/monsters/Monster.h"
 #include <vector>
 #include <memory>
 
