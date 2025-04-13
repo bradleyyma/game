@@ -52,17 +52,42 @@ bool Game::init() {
     // Initialize player in the center of the screen
 
     player.init(w / 2, h / 2);
+
+
+    std::unique_ptr<Platform> p1 = std::make_unique<Platform>();
+    p1->init(100, h / 1.1, 200, 50);
     
+    p1->setVelocity(100.0f, 0);
+    
+    if (!player.loadTexture(renderer, "../assets/images/dot.bmp")) {
+        std::cerr << "Failed to load player texture!" << std::endl;
+    }
+
+    if (!p1->loadTexture(renderer, "../assets/images/platform.png")) {
+        std::cerr << "[Game] Failed to load platform texture!" << std::endl;
+    }
+
+    platforms.emplace_back(std::move(p1));
+
     isRunning = true;
     return true;
 }
 
 bool Game::loadMedia() {
+    std::cout << "not called" << std::endl;
     // Load player texture
-    if (!player.loadTexture(renderer, "../assets/images/dot.bmp")) {
-        std::cerr << "Failed to load player texture!" << std::endl;
-        return false;
-    }
+    // if (!player.loadTexture(renderer, "../assets/images/dot2.bmp")) {
+    //     std::cerr << "Failed to load player texture!" << std::endl;
+    //     return false;
+    // }
+
+    // for (auto& platform : platforms) {
+    //     if (!platform.loadTexture(renderer, "../assets/images/platform.png")) {
+    //         std::cerr << "Failed to load platform texture!" << std::endl;
+    //         return false;
+    //     }
+    // }
+    
     
     return true;
 }
@@ -136,6 +161,20 @@ void Game::handleEvents() {
 }
 
 void Game::update(float deltaTime) {
+    // Update platforms
+    for (auto & platform : platforms) {
+        platform->update(deltaTime);
+
+        // Bounce
+        int screenW, screenH;
+        SDL_GetWindowSize(window, &screenW, &screenH);
+
+        SDL_Rect rect = platform->getCollider();
+        if (rect.x <= 0 || rect.x + rect.w >= screenW) {
+            platform->reverseX();
+        }
+    }
+    
     // Update player
     player.update(deltaTime);
     player.getGun()->update(deltaTime);  // Update bullets
@@ -159,6 +198,11 @@ void Game::render() {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
     
+    // Render platform
+    for (auto & platform : platforms) {
+        platform->render(renderer);
+    }
+
     // Render player
     player.render(renderer);
     player.getGun()->render(renderer);  // Render bullets
