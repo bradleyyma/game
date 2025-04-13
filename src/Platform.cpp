@@ -3,24 +3,20 @@
 
 const float Platform::SPEED = 100.0f;
 
-Platform::Platform() : texture(nullptr), velX(0), velY(0) {
-    collider = {0, 0, WIDTH, HEIGHT};
+Platform::Platform(int x, int y, int width, int height, int velX, int velY) 
+    : texture(nullptr)
+    , collider{x, y, width, height}
+    , velX(velX)
+    , velY(velY) {
 }
 
-void Platform::init(int x, int y, int width, int height) {
-    collider = {x, y, width, height};
+Platform::~Platform() {
+    if (texture) {
+        SDL_DestroyTexture(texture);
+        texture = nullptr;
+    }
 }
 
-// bool Platform::loadTexture(SDL_Renderer* renderer, const std::string& path) {
-//     SDL_Surface* surface = IMG_Load(path.c_str());
-//     std::cout << "[Platform] ACTUALLY LOADING: " << path << std::endl;
-
-//     if (!surface) return false;
-
-//     texture = SDL_CreateTextureFromSurface(renderer, surface);
-//     SDL_FreeSurface(surface);
-//     return texture != nullptr;
-// }
 
 bool Platform::loadTexture(SDL_Renderer* renderer, const std::string& path) {
     std::cout << "[Platform] Attempting to load: " << path << std::endl;
@@ -34,15 +30,15 @@ bool Platform::loadTexture(SDL_Renderer* renderer, const std::string& path) {
 
     // Create texture from surface pixels
     texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
-    if (texture == nullptr) {
-        std::cerr << "Unable to create texture from " << path << "! SDL Error: " << SDL_GetError() << std::endl;
-        SDL_FreeSurface(loadedSurface);
-        return false;
-    }
-
     // Get rid of old loaded surface
     SDL_FreeSurface(loadedSurface);
 
+    if (texture == nullptr) {
+        std::cerr << "Unable to create texture from " << path << "! SDL Error: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    
     std::cout << "[Platform] Texture loaded successfully!\n";
 
     return true;
@@ -81,9 +77,4 @@ SDL_Rect Platform::getCollider() const {
     return collider;
 }
 
-Platform::~Platform() {
-    if (texture) {
-        SDL_DestroyTexture(texture);
-        texture = nullptr;
-    }
-}
+
