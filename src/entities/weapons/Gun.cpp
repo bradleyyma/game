@@ -4,7 +4,7 @@
 #include <cmath>
 
 Gun::Gun(float x, float y, int damage)
-    : x(x), y(y), damage(damage), fireRate{.5f}, activeBullets(), lastShotTime(0.0f) {
+    : x(x), y(y), damage(damage), fireRate{.005f}, activeBullets(), lastShotTime(0.0f) {
 }
 Gun::~Gun() {
     // Destructor

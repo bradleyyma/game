@@ -5,7 +5,7 @@
 
 
 Bullet::Bullet(float x, float y, float dirX, float dirY, int damage)
-    : x(x), y(y), damage(damage), speed(500.0f), dirX(dirX), dirY(dirY), texture(nullptr) {
+    : x(x), y(y), damage(damage), speed(300.0f), dirX(dirX), dirY(dirY), texture(nullptr) {
     // Load the bullet texture
 }
 
