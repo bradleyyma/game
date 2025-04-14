@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Game.h"
 #include <iostream>
 
 // Initialize static members
@@ -7,8 +8,11 @@ const float Player::JUMP_VELOCITY = -500.0f; // pixels per second
 const float Player::GRAVITY = 800.0f;      // pixels per second squared
 
 Player::Player()
-    : x(0), y(0), velX(0), velY(0), health(100), isJumping(false), texture(nullptr), isMouseDown(false) {
-    gun = std::make_unique<Gun>(0, 0, 10);
+    : x(0), y(0)
+    , velX(0), velY(0)
+    , health(100), isJumping(true)
+    , texture(nullptr), isMouseDown(false)
+    , gun(x, y, 30) { // Initialize gun with position and damage;
 }
 
 Player::~Player() {
@@ -19,11 +23,9 @@ Player::~Player() {
     }
 }
 
-void Player::init(int startX, int startY) {
-    x = startX;
-    y = startY;
-    isJumping = true;
-    health = 100;
+void Player::setPosition(float x, float y) {
+    this->x = x;
+    this->y = y;
 }
 
 void Player::takeDamage(int amount) {
@@ -33,9 +35,9 @@ void Player::takeDamage(int amount) {
 
 bool Player::checkCollision(const Monster& monster) const {
     // Simple AABB collision detection
-    return (x < monster.getX() + Monster::WIDTH &&
+    return (x < monster.getX() + monster.getWidth() &&
             x + WIDTH > monster.getX() &&
-            y < monster.getY() + Monster::HEIGHT &&
+            y < monster.getY() + monster.getHeight() &&
             y + HEIGHT > monster.getY());
 }
 
@@ -125,11 +127,11 @@ void Player::handleEvent(SDL_Event& event) {
     }
 }
 
-void Player::update(float deltaTime) {
+void Player::update(float deltaTime, Game & game) {
     // Check if mouse is being held down
     if (isMouseDown) {
         // Handle continuous mouse press here
-        gun->shoot();
+        gun.shoot(game);
     }
     
     // Apply movement based on key states
@@ -173,7 +175,7 @@ void Player::update(float deltaTime) {
     }
 
     // Update gun position
-    gun->setPosition(static_cast<int>(x), static_cast<int>(y));
+    gun.setPosition(static_cast<int>(x), static_cast<int>(y));
 }
 
 void Player::render(SDL_Renderer* renderer) {

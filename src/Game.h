@@ -17,6 +17,7 @@ public:
     bool loadMedia(); // Load game assets
     void run();      // Main game loop
     void clean();    // Clean up resources
+    void addBullet(std::unique_ptr<Bullet> bullet);
     
 private:
     void handleEvents();
@@ -30,6 +31,7 @@ private:
     Player player;
     std::vector< std::unique_ptr<Monster> > monsters;
     std::vector< std::unique_ptr<Platform> > platforms;
+    std::vector< std::unique_ptr<Bullet> > bullets;
     
     float monsterSpawnTimer;
     const float MONSTER_SPAWN_INTERVAL = 5.0f; // Spawn a monster every 5 seconds
@@ -40,4 +42,6 @@ private:
     int frameTime;
     const int FPS = 60;
     const int FRAME_DELAY = 1000 / FPS;
+    int WORLD_WIDTH;
+    int WORLD_HEIGHT;
 };

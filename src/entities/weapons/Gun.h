@@ -7,6 +7,9 @@
 #include <vector>
 #include "Bullet.h"
 
+// Forward declaration
+class Game;
+
 class Gun {
     public:
         Gun(float x, float y, int damage);
@@ -16,7 +19,7 @@ class Gun {
         int getX() const;
         int getY() const;
         int getDamage() const;
-        void shoot();
+        void shoot(Game & game);
         void update(float deltaTime);
         void render(SDL_Renderer* renderer);
 
@@ -25,5 +28,4 @@ class Gun {
         float fireRate;
         float lastShotTime;  // Time since last shot
         int damage;          // Damage dealt by the gun
-        std::vector<std::unique_ptr<Bullet>> activeBullets;  // Store active bullets
 };

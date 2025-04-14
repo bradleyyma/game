@@ -5,25 +5,24 @@
 std::unique_ptr<Monster> MonsterFactory::createMonster(MonsterType type, SDL_Renderer* renderer, int windowWidth, int windowHeight) {
     switch (type) {
         case MonsterType::SLIME: {
+            int direction = GameUtils::getRandomBool() ? 1 : -1; // Random direction
             auto slime = std::make_unique<Slime>(
-                GameUtils::getRandomX(windowWidth, Monster::WIDTH),
-                GameUtils::getGroundY(windowHeight, Monster::HEIGHT),
+                GameUtils::getRandomX(windowWidth, Slime::SLIME_WIDTH),
+                GameUtils::getGroundY(windowHeight, Slime::SLIME_HEIGHT),
                 windowWidth,
                 windowHeight,
-                GameUtils::getRandomBool(),
+                direction,
                 GameUtils::getRandomFloat(Slime::SLIME_SPEED_MIN, Slime::SLIME_SPEED_MAX)
             );
-            slime->loadTexture(renderer, "../assets/images/slime.png");
             return slime;
         }
         case MonsterType::HOPPER: {
             auto hopper = std::make_unique<Hopper>(
-                GameUtils::getRandomX(windowWidth, Monster::WIDTH),
-                GameUtils::getGroundY(windowHeight, Monster::HEIGHT),
+                GameUtils::getRandomX(windowWidth, Hopper::WIDTH),
+                GameUtils::getGroundY(windowHeight, Hopper::HEIGHT),
                 windowWidth,
                 windowHeight
             );
-            hopper->loadTexture(renderer, "../assets/images/slime.png"); // Using slime texture for now
             return hopper;
         }
         default:
