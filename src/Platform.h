@@ -6,7 +6,7 @@
 
 class Platform {
 public:
-    Platform();
+    Platform(int x, int y, int width, int height, int velX, int velY);
     ~Platform();
     
     void init(int x, int y, int width = WIDTH, int height = HEIGHT);

@@ -37,4 +37,24 @@ namespace GameUtils {
         std::uniform_real_distribution<float> dis(min, max);
         return dis(gen);
     }
-} 
+
+    bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) {
+        return SDL_HasIntersection(&a, &b);
+    }
+
+    bool isInScreen(const SDL_Rect& rect, int screenWidth, int screenHeight) {
+        return (rect.x >= 0 && 
+                rect.x + rect.w <= screenWidth && 
+                rect.y >= 0 && 
+                rect.y + rect.h <= screenHeight);
+    }
+
+    SDL_Rect makeRect(float x, float y, int width, int height) {
+        return SDL_Rect{ 
+            static_cast<int>(x), 
+            static_cast<int>(y), 
+            width, 
+            height 
+        };
+    }
+}

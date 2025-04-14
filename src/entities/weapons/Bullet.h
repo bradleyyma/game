@@ -14,16 +14,18 @@ public:
     int getDamage() const;
 
     bool move(float deltaTime);
-    void draw() const;
     void render(SDL_Renderer* renderer);
-    bool loadTexture(SDL_Renderer* renderer, const std::string& path);
+    
+    static bool loadSharedTexture(SDL_Renderer* renderer, const std::string& path);
+    static void cleanupSharedTexture();
+
+    static const int WIDTH = 10;
+    static const int HEIGHT = 10;
+
 private:
     float x, y;          // Position
     int damage;         // Damage dealt by the bullet
     float speed;        // Speed of the bullet
     float dirX, dirY;      // Direction vector (normalized)
-    SDL_Texture* texture; // Texture for the bullet sprite
-
-    static const int WIDTH = 10;
-    static const int HEIGHT = 10;
+    static SDL_Texture* sharedTexture; // Shared texture for all bullets
 };

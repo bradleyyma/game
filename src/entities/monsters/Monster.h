@@ -7,31 +7,29 @@
 
 class Monster {
 public:
-    // Monster dimensions
-    static const int WIDTH = 50;
-    static const int HEIGHT = 50;
-    
     virtual ~Monster();
 
     virtual void update(float deltaTime) = 0;  // Pure virtual function
-
-    bool loadTexture(SDL_Renderer* renderer, const std::string& path);
-    void render(SDL_Renderer* renderer);
+    virtual void render(SDL_Renderer* renderer) = 0;  // Pure virtual function
     float getX() const { return x; }
     float getY() const { return y; }
+    float getWidth() const { return width; }
+    float getHeight() const { return height; }
     int getDamage() const { return damage; }
+    void takeDamage(int amount) { health -= amount; }
+    int getHealth() const { return health; }
     
 protected:
-    Monster(float x, float y, float maxX, float maxY, int maxHealth, int damage);  // Protected constructor
+    Monster(float x, float y, float w, float h, float maxX, float maxY, int maxHealth, int damage);  // Protected constructor
     
     float x, y;            // Position
     float velX, velY;      // Velocity
+    float width, height;  // Dimensions
     float maxX, maxY;
     int health;            // Health points
     bool isJumping;        // Jump state
     int damage;         // Damage dealt by the monster
-    
-    // Texture for the Monster sprite
-    SDL_Texture* texture;
+    void render(SDL_Renderer* renderer, SDL_Texture* texture);
+    static SDL_Texture* loadTexture(SDL_Renderer* renderer, SDL_Texture* texture, const std::string& path);
     
 };

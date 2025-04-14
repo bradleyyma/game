@@ -3,26 +3,20 @@
 #include <SDL_image.h>
 #include <iostream>
 
+// Initialize static member
+SDL_Texture* Bullet::sharedTexture = nullptr;
 
 Bullet::Bullet(float x, float y, float dirX, float dirY, int damage)
-    : x(x), y(y), damage(damage), speed(300.0f), dirX(dirX), dirY(dirY), texture(nullptr) {
-    // Load the bullet texture
+    : x(x), y(y), damage(damage), speed(500.0f), dirX(dirX), dirY(dirY) {
 }
 
 Bullet::~Bullet() {
-    // Clean up texture if it exists
-    if (texture) {
-        SDL_DestroyTexture(texture);
-        texture = nullptr;
-    }
+    // No need to destroy texture here as it's shared
 }
 
-bool Bullet::loadTexture(SDL_Renderer* renderer, const std::string& path) {
+bool Bullet::loadSharedTexture(SDL_Renderer* renderer, const std::string& path) {
     // Clean up previous texture if it exists
-    if (texture) {
-        SDL_DestroyTexture(texture);
-        texture = nullptr;
-    }
+    cleanupSharedTexture();
 
     // Load image at specified path
     SDL_Surface* loadedSurface = IMG_Load(path.c_str());
@@ -33,8 +27,8 @@ bool Bullet::loadTexture(SDL_Renderer* renderer, const std::string& path) {
     }
 
     // Create texture from surface pixels
-    texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
-    if (!texture) {
+    sharedTexture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    if (!sharedTexture) {
         std::cerr << "Unable to create texture from " << path << "! SDL Error: " 
                   << SDL_GetError() << std::endl;
         SDL_FreeSurface(loadedSurface);
@@ -43,8 +37,14 @@ bool Bullet::loadTexture(SDL_Renderer* renderer, const std::string& path) {
 
     // Get rid of old loaded surface
     SDL_FreeSurface(loadedSurface);
-
     return true;
+}
+
+void Bullet::cleanupSharedTexture() {
+    if (sharedTexture) {
+        SDL_DestroyTexture(sharedTexture);
+        sharedTexture = nullptr;
+    }
 }
 
 void Bullet::setPosition(float x, float y) {
@@ -55,6 +55,7 @@ void Bullet::setPosition(float x, float y) {
 float Bullet::getX() const {
     return x;
 }
+
 float Bullet::getY() const {
     return y;
 }
@@ -70,18 +71,13 @@ bool Bullet::move(float deltaTime) {
 }
 
 void Bullet::render(SDL_Renderer* renderer) {
-    if (texture) {
-        SDL_Rect renderQuad = {static_cast<int>(x), static_cast<int>(y), WIDTH, HEIGHT};
-        SDL_RenderCopy(renderer, texture, nullptr, &renderQuad);
+    SDL_Rect renderQuad = {static_cast<int>(x), static_cast<int>(y), WIDTH, HEIGHT};
+    
+    if (sharedTexture) {
+        SDL_RenderCopy(renderer, sharedTexture, nullptr, &renderQuad);
     } else {
-        // Fallback: Render a red rectangle if texture not loaded
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_Rect bulletRect = { 
-            static_cast<int>(x), 
-            static_cast<int>(y), 
-            WIDTH, 
-            HEIGHT 
-        };
-        SDL_RenderFillRect(renderer, &bulletRect);
+        // Fallback: Render a colored rectangle if texture not loaded
+        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);  // Yellow fallback color
+        SDL_RenderFillRect(renderer, &renderQuad);
     }
 }
