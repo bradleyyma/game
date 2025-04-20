@@ -2,6 +2,7 @@
 #include "entities/monsters/Slime.h"
 #include "entities/monsters/MonsterFactory.h"
 #include "GameUtils.h"
+#include "CollidableManager.h"
 #include <iostream>
 #include <random>
 
@@ -58,11 +59,15 @@ bool Game::init() {
     player.setPosition(w / 2, h / 2);
 
 
-    std::unique_ptr<Platform> p1 = std::make_unique<Platform>(100, h / 1.1, 200, 50, 100.0f, 0);
+    std::unique_ptr<Platform> p1 = std::make_unique<Platform>(100, h / 1.1 - 50, 200, 50, 100.0f, 0);
     
     platforms.emplace_back(std::move(p1));
 
     isRunning = true;
+
+    collidables.push_back(&player);
+    collidables.push_back(platforms.back().get());
+
     return true;
 }
 
@@ -170,12 +175,16 @@ void Game::checkCollisions() {
     }
 
     // Check player bounds
+    // std::cout << "Player position: (" << player.getX() << ", " << player.getY() << ")" << std::endl;
+    // std::cout << "World dimensions: (" << WORLD_WIDTH << ", " << WORLD_HEIGHT << ")" << std::endl;
     if (player.getX() < 0) player.setPosition(0, player.getY());
     if (player.getX() > WORLD_WIDTH - Player::WIDTH) player.setPosition(WORLD_WIDTH - Player::WIDTH, player.getY());
     if (player.getY() < 0) player.setPosition(player.getX(), 0);
-    if (player.getY() > WORLD_HEIGHT - Player::HEIGHT) {
+    if (player.getY() >= WORLD_HEIGHT - Player::HEIGHT) {
         player.setPosition(player.getX(), WORLD_HEIGHT - Player::HEIGHT);
-        player.resetJump(); // Stop jumping when hitting ground
+        // std::cout << "Player hit the ground!" << std::endl;
+        player.resetJump(false); // Stop jumping when hitting ground
+        player.setOnGround(true);
     }
 }
 
@@ -184,6 +193,7 @@ void Game::run() {
     frameStart = SDL_GetTicks();
     
     while (isRunning) {
+        // std::cout << "FRAME START: \n\n" << std::endl;
         Uint32 currentTime = SDL_GetTicks();
         float deltaTime = (currentTime - lastTime) / 1000.0f; // Convert to seconds
         lastTime = currentTime;
@@ -194,7 +204,11 @@ void Game::run() {
         }
         handleEvents();
         update(deltaTime);
+        // player.setOnGround(false);
+        CollidableManager::checkCollisions(collidables);
         checkCollisions();
+        // std::cout << "Player on ground: " << player.getOnGround() << std::endl;
+        // CollidableManager::checkCollisions(collidables, player.getOnGround());
         render();
         
         // Cap the frame rate

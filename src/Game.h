@@ -32,6 +32,7 @@ private:
     std::vector< std::unique_ptr<Monster> > monsters;
     std::vector< std::unique_ptr<Platform> > platforms;
     std::vector< std::unique_ptr<Bullet> > bullets;
+    std::vector<Collidable*> collidables;
     
     float monsterSpawnTimer;
     const float MONSTER_SPAWN_INTERVAL = 5.0f; // Spawn a monster every 5 seconds

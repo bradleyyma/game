@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "Game.h"
+#include "Platform.h"
 #include <iostream>
 
 // Initialize static members
@@ -10,6 +11,7 @@ const float Player::GRAVITY = 800.0f;      // pixels per second squared
 Player::Player()
     : x(0), y(0)
     , velX(0), velY(0)
+    , collider{0, 0, WIDTH, HEIGHT}
     , health(100), isJumping(true)
     , texture(nullptr), isMouseDown(false)
     , gun(x, y, 30) { // Initialize gun with position and damage;
@@ -26,6 +28,8 @@ Player::~Player() {
 void Player::setPosition(float x, float y) {
     this->x = x;
     this->y = y;
+    collider.x = x;
+    collider.y = y;
 }
 
 void Player::takeDamage(int amount) {
@@ -88,7 +92,10 @@ void Player::handleEvent(SDL_Event& event) {
                 keyStates[3] = true;
                 break;
             case SDLK_SPACE:
-                if (!isJumping) {
+                std::cout << "Space key pressed!\n";
+                // std::cout << "isJumping: " << isJumping << "\n";
+                if (!isJumping && onGround) {
+                    std::cout << "Player is now jumping!\n";
                     velY = JUMP_VELOCITY;
                     isJumping = true;
                 }
@@ -137,27 +144,32 @@ void Player::update(float deltaTime, Game & game) {
     // Apply movement based on key states
     velX = 0;
     
-    if (keyStates[0]) { // W - up
-        velY = -SPEED;
-    }
+    // if (keyStates[0]) { // W - up
+    //     velY = -SPEED;
+    // }
     if (keyStates[1]) { // A - left
         velX = -SPEED;
     }
-    if (keyStates[2]) { // S - down
-        velY = SPEED;
-    }
+    // if (keyStates[2]) { // S - down
+    //     velY = SPEED;
+    // }
     if (keyStates[3]) { // D - right
         velX = SPEED;
     }
     
     // Apply gravity if jumping
     if (isJumping) {
+        std::cout << "Player is still jumping!\n";
         velY += GRAVITY * deltaTime;
+    } else {
+        velY = 0; // Reset vertical velocity when not jumping
     }
     
     // Update position using deltaTime
     x += velX * deltaTime;
     y += velY * deltaTime;
+    collider.x = x;
+    collider.y = y;
     
     // Simple boundary check (adjust these based on your game window size)
     int windowWidth, windowHeight;
@@ -224,4 +236,23 @@ void Player::render(SDL_Renderer* renderer) {
         5 
     };
     SDL_RenderFillRect(renderer, &healthBar);
+}
+
+void Player::resetJump(bool jumping) {
+    isJumping = jumping;
+    if (!isJumping) {
+        std::cout << "Player has landed!\n";
+        velY = 0;
+    }
+}
+
+void Player::onCollision(const Collidable& other) { 
+    std::cout << "Player Collision Detected!\n";
+
+    if (auto platform = dynamic_cast<const class Platform*>(&other)) {
+        if (isJumping) {
+            std::cout << "Player collided with platform! Restting jump\n";
+            resetJump(false);
+        }
+    }
 }

@@ -5,8 +5,10 @@
 #include <string>
 #include "entities/monsters/Monster.h"
 #include "entities/weapons/Gun.h"
+#include "Collidable.h"
+#include <iostream>
 
-class Player {
+class Player : public Collidable {
 public:
     Player();
     ~Player();
@@ -26,17 +28,28 @@ public:
     
     float getX() const { return x; }
     float getY() const { return y; }
-    void resetJump() { isJumping = false; velY = 0; }
+    void resetJump(bool jumping);
+    void stopJump() { isJumping = true; velY = 0; }
+    bool getIsJumping() const { return isJumping; }
+    void setOnGround(bool floor) { onGround = floor; }
+    bool getOnGround() const { return onGround; }
+
+    SDL_Rect getCollider() const override {
+        return collider;
+    }
+
+    void onCollision(const Collidable& other) override;
     
 private:
     float x, y;            // Position
     float velX, velY;      // Velocity
     int health;            // Health points
     bool isJumping;        // Jump state
+    bool onGround;        // Ground state
     Gun gun;
     
     SDL_Texture* texture; // Texture for the player sprite
-    
+    SDL_Rect collider;
     
     
     // Movement constants
@@ -47,4 +60,5 @@ private:
     // Key states
     bool keyStates[4] = {false}; // W, A, S, D
     bool isMouseDown; // Mouse state
+
 };

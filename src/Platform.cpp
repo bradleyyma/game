@@ -1,4 +1,5 @@
 #include "Platform.h"
+#include "Player.h"
 #include <iostream>
 
 const float Platform::SPEED = 100.0f;
@@ -75,6 +76,15 @@ bool Platform::checkCollision(const SDL_Rect& other) const {
 
 SDL_Rect Platform::getCollider() const {
     return collider;
+}
+
+void Platform::onCollision(const Collidable& other) {
+    std::cout << "Platform Collision Detected!\n";
+    
+    if (auto player = dynamic_cast<const Player*>(&other)) {
+        // const_cast<Player*>(player)->resetJump(false);
+        std::cout << "Platform collided with player!\n";
+    }
 }
 
 
