@@ -21,11 +21,13 @@ public:
     void update(float deltaTime, Game & game);
     void render(SDL_Renderer* renderer);
     void takeDamage(int amount);
+    void reset(float reset_x, float reset_y);
     bool checkCollision(const Monster& monster) const;
     Gun* getGun() { return &gun; } // Accessor for gun
     
     float getX() const { return x; }
     float getY() const { return y; }
+    int getHealth() const { return health; }
     void resetJump() { isJumping = false; velY = 0; }
     
 private:

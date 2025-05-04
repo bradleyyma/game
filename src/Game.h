@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include "Player.h"
 #include "entities/monsters/Monster.h"
 #include "Platform.h"
@@ -10,6 +11,13 @@
 
 class Game {
 public:
+    // Game states
+    enum class GameState {
+        MENU,
+        PLAYING,
+        GAME_OVER
+    };
+
     Game();
     ~Game();
     
@@ -25,9 +33,38 @@ private:
     void render();
     void spawnMonster();  // Spawn a new monster
     void checkCollisions(); // Check for collisions between player and monsters
+    void resetGame();     // Reset game state for replay
+    
+    // Menu and end screen functions
+    void renderMenu();
+    void renderEndScreen();
+    void handleMenuEvents(SDL_Event& event);
+    void handleEndScreenEvents(SDL_Event& event);
     
     SDL_Window* window;
     SDL_Renderer* renderer;
+    GameState currentState;
+    SDL_Texture* menuTexture;
+    SDL_Rect startButtonRect;
+    
+    // End screen buttons
+    SDL_Rect replayButtonRect;
+    SDL_Rect menuButtonRect;
+    bool isMouseOverReplayButton;
+    bool isMouseOverMenuButton;
+    bool isMouseOverButton;
+    
+    // Text rendering members
+    TTF_Font* font;
+    SDL_Texture* startButtonText;
+    SDL_Texture* replayButtonText;
+    SDL_Texture* menuButtonText;
+    SDL_Texture* gameOverText;
+    SDL_Rect startTextRect;
+    SDL_Rect replayTextRect;
+    SDL_Rect menuTextRect;
+    SDL_Rect gameOverTextRect;
+    
     Player player;
     std::vector< std::unique_ptr<Monster> > monsters;
     std::vector< std::unique_ptr<Platform> > platforms;

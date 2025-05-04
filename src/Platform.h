@@ -10,17 +10,17 @@ public:
     ~Platform();
     
     void init(int x, int y, int width = WIDTH, int height = HEIGHT);
-    bool loadTexture(SDL_Renderer* renderer, const std::string& path);
     void update(float deltaTime);
     void render(SDL_Renderer* renderer) const;
     void setVelocity(float vx, float vy);
     void reverseX(); // Bounce logic
+    static bool loadSharedTexture(SDL_Renderer* renderer, const std::string& path);
 
     bool checkCollision(const SDL_Rect& other) const;
     SDL_Rect getCollider() const;
 
 private:
-    SDL_Texture* texture;
+    static SDL_Texture* sharedTexture; // Shared texture for all slimes
     SDL_Rect collider;     // Position and size
     float velX, velY;      // For moving platforms
 
