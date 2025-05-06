@@ -15,7 +15,8 @@ public:
     enum class GameState {
         MENU,
         PLAYING,
-        GAME_OVER
+        GAME_OVER,
+        LEADERBOARD
     };
 
     Game();
@@ -41,6 +42,20 @@ private:
     void handleMenuEvents(SDL_Event& event);
     void handleEndScreenEvents(SDL_Event& event);
     
+    // Leaderboard
+    std::vector<float> leaderboard;
+    void loadLeaderboard();
+    void saveLeaderboard();
+    void updateLeaderboard(float score);
+    void renderLeaderboard();
+    void handleLeaderboardEvents(SDL_Event& event);
+    SDL_Rect leaderboardButtonRect;
+    SDL_Rect backButtonRect;
+    bool isMouseOverLeaderboardButton;
+    bool isMouseOverBackButton;
+    std::vector<SDL_Texture*> leaderboardTextTextures;
+    std::vector<SDL_Rect> leaderboardTextRects;
+
     SDL_Window* window;
     SDL_Renderer* renderer;
     GameState currentState;
@@ -65,6 +80,14 @@ private:
     SDL_Rect menuTextRect;
     SDL_Rect gameOverTextRect;
     
+    // Timer for tracking time alive
+    float timeAlive; // seconds
+    float lastScore; // last round's score
+    SDL_Texture* timeTextTexture;
+    SDL_Rect timeTextRect;
+    SDL_Texture* scoreTextTexture;
+    SDL_Rect scoreTextRect;
+
     Player player;
     std::vector< std::unique_ptr<Monster> > monsters;
     std::vector< std::unique_ptr<Platform> > platforms;

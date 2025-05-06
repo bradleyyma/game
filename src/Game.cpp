@@ -4,13 +4,17 @@
 #include "GameUtils.h"
 #include <iostream>
 #include <random>
+#include <sstream>
+#include <fstream>
+#include <algorithm>
 
 Game::Game()
     : window(nullptr), renderer(nullptr), isRunning(false), frameStart(0), frameTime(0),
       monsterSpawnTimer(0.0f), currentState(GameState::MENU), menuTexture(nullptr),
       isMouseOverButton(false), isMouseOverReplayButton(false), isMouseOverMenuButton(false),
-      font(nullptr), startButtonText(nullptr), replayButtonText(nullptr), 
-      menuButtonText(nullptr), gameOverText(nullptr) {
+      isMouseOverBackButton(false), isMouseOverLeaderboardButton(false), font(nullptr), startButtonText(nullptr), replayButtonText(nullptr), 
+      menuButtonText(nullptr), gameOverText(nullptr),
+      timeAlive(0.0f), lastScore(0.0f), timeTextTexture(nullptr), scoreTextTexture(nullptr) {
 }
 
 Game::~Game() {
@@ -87,6 +91,13 @@ bool Game::init() {
         60
     };
 
+    backButtonRect = {
+        WORLD_WIDTH / 2 - 100,
+        WORLD_HEIGHT - 100,
+        200,
+        60
+    };
+
     // Create text textures
     SDL_Color textColor = {255, 255, 255, 255}; // White text
     
@@ -140,6 +151,11 @@ bool Game::init() {
     // Initialize platform
     std::unique_ptr<Platform> p1 = std::make_unique<Platform>(100, WORLD_HEIGHT / 1.1, 200, 50, 100.0f, 0);
     platforms.emplace_back(std::move(p1));
+
+    timeAlive = 0.0f;
+    lastScore = 0.0f;
+    if (timeTextTexture) { SDL_DestroyTexture(timeTextTexture); timeTextTexture = nullptr; }
+    if (scoreTextTexture) { SDL_DestroyTexture(scoreTextTexture); scoreTextTexture = nullptr; }
 
     isRunning = true;
     return true;
@@ -256,6 +272,23 @@ void Game::checkCollisions() {
 
     // Check if player is dead
     if (player.getHealth() <= 0) {
+        lastScore = timeAlive;
+        updateLeaderboard(lastScore);
+        // Update score texture
+        if (scoreTextTexture) { SDL_DestroyTexture(scoreTextTexture); scoreTextTexture = nullptr; }
+        std::ostringstream oss;
+        oss.precision(2);
+        oss << std::fixed << "Score: " << lastScore << "s";
+        SDL_Color textColor = {0, 0, 0, 255};
+        SDL_Surface* textSurface = TTF_RenderText_Solid(font, oss.str().c_str(), textColor);
+        if (textSurface) {
+            scoreTextTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+            scoreTextRect.x = WORLD_WIDTH / 2 - textSurface->w / 2;
+            scoreTextRect.y = gameOverTextRect.y + gameOverTextRect.h + 20;
+            scoreTextRect.w = textSurface->w;
+            scoreTextRect.h = textSurface->h;
+            SDL_FreeSurface(textSurface);
+        }
         currentState = GameState::GAME_OVER;
     }
 }
@@ -275,7 +308,10 @@ void Game::run() {
         }
         handleEvents();
         update(deltaTime);
-        checkCollisions();
+        if (currentState == GameState::PLAYING) {
+            checkCollisions();
+        }
+        
         render();
         
         // Cap the frame rate
@@ -303,6 +339,9 @@ void Game::handleEvents() {
         else if (currentState == GameState::GAME_OVER) {
             handleEndScreenEvents(event);
         }
+        else if (currentState == GameState::LEADERBOARD) {
+            handleLeaderboardEvents(event);
+        }
         else {
             // Pass the event to the player for handling
             player.handleEvent(event);
@@ -314,24 +353,35 @@ void Game::handleMenuEvents(SDL_Event& event) {
     if (event.type == SDL_MOUSEMOTION) {
         int mouseX = event.motion.x;
         int mouseY = event.motion.y;
-        
         // Check if mouse is over the start button
         isMouseOverButton = (mouseX >= startButtonRect.x && 
                            mouseX <= startButtonRect.x + startButtonRect.w &&
                            mouseY >= startButtonRect.y && 
                            mouseY <= startButtonRect.y + startButtonRect.h);
+        // Check if mouse is over the leaderboard button (using menuButtonRect)
+        isMouseOverLeaderboardButton = (mouseX >= menuButtonRect.x && 
+                                      mouseX <= menuButtonRect.x + menuButtonRect.w &&
+                                      mouseY >= menuButtonRect.y && 
+                                      mouseY <= menuButtonRect.y + menuButtonRect.h);
     }
     else if (event.type == SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT) {
             int mouseX = event.button.x;
             int mouseY = event.button.y;
-            
             // Check if click is on the start button
             if (mouseX >= startButtonRect.x && 
                 mouseX <= startButtonRect.x + startButtonRect.w &&
                 mouseY >= startButtonRect.y && 
                 mouseY <= startButtonRect.y + startButtonRect.h) {
                 currentState = GameState::PLAYING;
+            }
+            // Check if click is on the leaderboard button
+            if (mouseX >= menuButtonRect.x && 
+                mouseX <= menuButtonRect.x + menuButtonRect.w &&
+                mouseY >= menuButtonRect.y && 
+                mouseY <= menuButtonRect.y + menuButtonRect.h) {
+                loadLeaderboard();
+                currentState = GameState::LEADERBOARD;
             }
         }
     }
@@ -380,6 +430,22 @@ void Game::handleEndScreenEvents(SDL_Event& event) {
     }
 }
 
+void Game::handleLeaderboardEvents(SDL_Event& event) {
+    if (event.type == SDL_MOUSEMOTION) {
+        int mouseX = event.motion.x;
+        int mouseY = event.motion.y;
+        isMouseOverBackButton = (mouseX >= backButtonRect.x && mouseX <= backButtonRect.x + backButtonRect.w && mouseY >= backButtonRect.y && mouseY <= backButtonRect.y + backButtonRect.h);
+    } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (event.button.button == SDL_BUTTON_LEFT) {
+            int mouseX = event.button.x;
+            int mouseY = event.button.y;
+            if (mouseX >= backButtonRect.x && mouseX <= backButtonRect.x + backButtonRect.w && mouseY >= backButtonRect.y && mouseY <= backButtonRect.y + backButtonRect.h) {
+                currentState = GameState::MENU;
+            }
+        }
+    }
+}
+
 void Game::resetGame() {
     // Clear all game objects
     monsters.clear();
@@ -394,10 +460,32 @@ void Game::resetGame() {
     platforms.clear();
     std::unique_ptr<Platform> p1 = std::make_unique<Platform>(100, WORLD_HEIGHT / 1.1, 200, 50, 100.0f, 0);
     platforms.emplace_back(std::move(p1));
+
+    timeAlive = 0.0f;
+    if (timeTextTexture) { SDL_DestroyTexture(timeTextTexture); timeTextTexture = nullptr; }
+    if (scoreTextTexture) { SDL_DestroyTexture(scoreTextTexture); scoreTextTexture = nullptr; }
 }
 
 void Game::update(float deltaTime) {
     if (currentState == GameState::PLAYING) {
+        // Update timer
+        timeAlive += deltaTime;
+        // Update timer texture
+        if (timeTextTexture) { SDL_DestroyTexture(timeTextTexture); timeTextTexture = nullptr; }
+        std::ostringstream oss;
+        oss.precision(2);
+        oss << std::fixed << "Time: " << timeAlive << "s";
+        SDL_Color textColor = {0, 0, 0, 255};
+        SDL_Surface* textSurface = TTF_RenderText_Solid(font, oss.str().c_str(), textColor);
+        if (textSurface) {
+            timeTextTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+            timeTextRect.x = 10;
+            timeTextRect.y = 10;
+            timeTextRect.w = textSurface->w;
+            timeTextRect.h = textSurface->h;
+            SDL_FreeSurface(textSurface);
+        }
+
         // Update platforms
         for (auto & platform : platforms) {
             platform->update(deltaTime);
@@ -447,6 +535,9 @@ void Game::render() {
         case GameState::GAME_OVER:
             renderEndScreen();
             break;
+        case GameState::LEADERBOARD:
+            renderLeaderboard();
+            break;
         case GameState::PLAYING:
             // Render platform
             for (auto & platform : platforms) {
@@ -465,6 +556,11 @@ void Game::render() {
             // Render all active bullets
             for (const auto& bullet : bullets) {
                 bullet->render(renderer);
+            }
+
+            // Render timer in top left
+            if (timeTextTexture) {
+                SDL_RenderCopy(renderer, timeTextTexture, nullptr, &timeTextRect);
             }
             break;
     }
@@ -487,6 +583,18 @@ void Game::renderMenu() {
     // Render the text on the button
     if (startButtonText) {
         SDL_RenderCopy(renderer, startButtonText, nullptr, &startTextRect);
+    }
+
+    // Render leaderboard button
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    SDL_RenderFillRect(renderer, &menuButtonRect);
+    SDL_Surface* leaderboardSurf = TTF_RenderText_Solid(font, "Leaderboard", {255, 255, 255, 255});
+    if (leaderboardSurf) {
+        SDL_Texture* leaderboardTex = SDL_CreateTextureFromSurface(renderer, leaderboardSurf);
+        SDL_Rect leaderboardRect = {menuButtonRect.x + (menuButtonRect.w - leaderboardSurf->w) / 2, menuButtonRect.y + (menuButtonRect.h - leaderboardSurf->h) / 2, leaderboardSurf->w, leaderboardSurf->h};
+        SDL_RenderCopy(renderer, leaderboardTex, nullptr, &leaderboardRect);
+        SDL_DestroyTexture(leaderboardTex);
+        SDL_FreeSurface(leaderboardSurf);
     }
 }
 
@@ -521,6 +629,94 @@ void Game::renderEndScreen() {
     if (menuButtonText) {
         SDL_RenderCopy(renderer, menuButtonText, nullptr, &menuTextRect);
     }
+
+    // Render score (time alive)
+    if (scoreTextTexture) {
+        SDL_RenderCopy(renderer, scoreTextTexture, nullptr, &scoreTextRect);
+    }
+}
+
+void Game::renderLeaderboard() {
+    // Clear previous textures
+    for (auto tex : leaderboardTextTextures) {
+        SDL_DestroyTexture(tex);
+    }
+    leaderboardTextTextures.clear();
+    leaderboardTextRects.clear();
+    
+    SDL_Color textColor = {0, 0, 0, 255};
+    int y = WORLD_HEIGHT / 5;
+    int x = WORLD_WIDTH / 2;
+    for (size_t i = 0; i < leaderboard.size(); ++i) {
+        std::ostringstream oss;
+        oss.precision(2);
+        oss << std::fixed << (i+1) << ". " << leaderboard[i] << "s";
+        SDL_Surface* surf = TTF_RenderText_Solid(font, oss.str().c_str(), textColor);
+        if (surf) {
+            SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_Rect rect = {x - surf->w/2, y, surf->w, surf->h};
+            leaderboardTextTextures.push_back(tex);
+            leaderboardTextRects.push_back(rect);
+            y += surf->h + 10;
+            SDL_FreeSurface(surf);
+        }
+    }
+    // Render title
+    SDL_Surface* titleSurf = TTF_RenderText_Solid(font, "Leaderboard", textColor);
+    if (titleSurf) {
+        SDL_Texture* titleTex = SDL_CreateTextureFromSurface(renderer, titleSurf);
+        SDL_Rect titleRect = {x - titleSurf->w/2, WORLD_HEIGHT/10, titleSurf->w, titleSurf->h};
+        SDL_RenderCopy(renderer, titleTex, nullptr, &titleRect);
+        SDL_DestroyTexture(titleTex);
+        SDL_FreeSurface(titleSurf);
+    }
+    // Render scores
+    for (size_t i = 0; i < leaderboardTextTextures.size(); ++i) {
+        SDL_RenderCopy(renderer, leaderboardTextTextures[i], nullptr, &leaderboardTextRects[i]);
+    }
+    // Render back button
+    if (isMouseOverBackButton) {
+        SDL_SetRenderDrawColor(renderer, 100, 100, 255, 255);
+    } else {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    }
+    SDL_RenderFillRect(renderer, &backButtonRect);
+    SDL_Surface* backSurf = TTF_RenderText_Solid(font, "Back", textColor);
+    if (backSurf) {
+        SDL_Texture* backTex = SDL_CreateTextureFromSurface(renderer, backSurf);
+        SDL_Rect backRect = {backButtonRect.x + (backButtonRect.w-backSurf->w)/2, backButtonRect.y + (backButtonRect.h-backSurf->h)/2, backSurf->w, backSurf->h};
+        SDL_RenderCopy(renderer, backTex, nullptr, &backRect);
+        SDL_DestroyTexture(backTex);
+        SDL_FreeSurface(backSurf);
+    }
+}
+
+void Game::loadLeaderboard() {
+    leaderboard.clear();
+    std::ifstream file("leaderboard.txt");
+    float score;
+    while (file >> score) {
+        leaderboard.push_back(score);
+    }
+    std::cout << "Leaderboard" << std::endl;
+    for (size_t i = 0; i < leaderboard.size(); ++i) {
+        std::cout << i + 1 << ". " << leaderboard[i] << "s" << std::endl;
+    }
+}
+
+void Game::saveLeaderboard() {
+    std::ofstream file("leaderboard.txt");
+    for (size_t i = 0; i < leaderboard.size() && i < 10; ++i) {
+        file << leaderboard[i] << std::endl;
+    }
+}
+
+void Game::updateLeaderboard(float score) {
+    loadLeaderboard();
+    leaderboard.push_back(score);
+    std::sort(leaderboard.begin(), leaderboard.end(), std::greater<float>());
+    if (leaderboard.size() > 10) leaderboard.resize(10);
+    saveLeaderboard();
 }
 
 void Game::clean() {
@@ -547,9 +743,23 @@ void Game::clean() {
         gameOverText = nullptr;
     }
 
+    for (auto tex : leaderboardTextTextures) {
+        SDL_DestroyTexture(tex);
+    }
+    leaderboardTextTextures.clear();
+
     if (font) {
         TTF_CloseFont(font);
         font = nullptr;
+    }
+
+    if (timeTextTexture) {
+        SDL_DestroyTexture(timeTextTexture);
+        timeTextTexture = nullptr;
+    }
+    if (scoreTextTexture) {
+        SDL_DestroyTexture(scoreTextTexture);
+        scoreTextTexture = nullptr;
     }
 
     if (renderer) {
