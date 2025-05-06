@@ -178,6 +178,20 @@ void Player::update(float deltaTime, Game & game) {
     gun.setPosition(static_cast<int>(x), static_cast<int>(y));
 }
 
+void Player::reset(float reset_x, float reset_y) {
+    std::cout << "[Player] Resetting player position to: " << reset_x << ", " << reset_y << std::endl;
+    x = reset_x;
+    y = reset_y;
+    velX = 0;
+    velY = 0;
+    health = 100;
+    isJumping = true;
+    for (int i = 0; i < 4; ++i) {
+        keyStates[i] = false;
+    }
+    isMouseDown = false;
+}
+
 void Player::render(SDL_Renderer* renderer) {
     if (texture) {
         // Create destination rectangle

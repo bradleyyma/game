@@ -2,23 +2,20 @@
 #include <iostream>
 
 const float Platform::SPEED = 100.0f;
+SDL_Texture* Platform::sharedTexture = nullptr;  // Define the static texture
+
 
 Platform::Platform(int x, int y, int width, int height, int velX, int velY) 
-    : texture(nullptr)
-    , collider{x, y, width, height}
+    : collider{x, y, width, height}
     , velX(velX)
     , velY(velY) {
 }
 
 Platform::~Platform() {
-    if (texture) {
-        SDL_DestroyTexture(texture);
-        texture = nullptr;
-    }
 }
 
 
-bool Platform::loadTexture(SDL_Renderer* renderer, const std::string& path) {
+bool Platform::loadSharedTexture(SDL_Renderer* renderer, const std::string& path) {
     std::cout << "[Platform] Attempting to load: " << path << std::endl;
 
     // Load image at specified path
@@ -29,11 +26,11 @@ bool Platform::loadTexture(SDL_Renderer* renderer, const std::string& path) {
     }
 
     // Create texture from surface pixels
-    texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    sharedTexture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
     // Get rid of old loaded surface
     SDL_FreeSurface(loadedSurface);
 
-    if (texture == nullptr) {
+    if (sharedTexture == nullptr) {
         std::cerr << "Unable to create texture from " << path << "! SDL Error: " << SDL_GetError() << std::endl;
         return false;
     }
@@ -51,8 +48,8 @@ void Platform::update(float deltaTime) {
 }
 
 void Platform::render(SDL_Renderer* renderer) const {
-    if (texture) {
-        SDL_RenderCopy(renderer, texture, NULL, &collider);
+    if (sharedTexture) {
+        SDL_RenderCopy(renderer, sharedTexture, NULL, &collider);
     } else {
         // Fallback: Render a colored rectangle if texture is missing
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);  // Green fallback color

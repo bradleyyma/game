@@ -4,7 +4,7 @@ const float Hopper::GRAVITY = 800.0f;
 SDL_Texture* Hopper::sharedTexture = nullptr;  // Define the static texture
 
 Hopper::Hopper(float x, float y, int maxX, int maxY)
-    : Monster(x, y, WIDTH, HEIGHT, maxX, maxY, 100, 20),  // 100 health, 20 damage
+    : Monster(x, y, WIDTH, HEIGHT, maxX, maxY, 100, 50),  // 100 health, 20 damage
       currentState(State::Waiting),
       waitTime(3.0f),
       hopSpeed(500.0f),
